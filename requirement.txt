@@ -22,3 +22,8 @@ numpy>=1.24.0
 
 # Utilities
 tqdm>=4.66.0
+
+# MCP (Model Context Protocol) dependencies
+mcp>=1.0.0
+fastmcp>=0.1.0
+langchain-mcp-adapters>=0.1.0

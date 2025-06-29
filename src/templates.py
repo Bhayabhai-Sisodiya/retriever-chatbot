@@ -161,6 +161,7 @@ ERROR_MESSAGES = {
     "retrieval_failed": "❌ Error retrieving transcript: {error}",
     "no_transcripts": "❌ No transcripts found in the collection",
     "file_not_found": "❌ No transcript found with filename: {filename}",
+    "file_path_not_found": "❌ File not found at path: {filename}",
     "processing_error": "❌ Error processing transcription: {error}",
     "api_key_missing": "❌ {api_key_name} not found in environment variables",
     "duplicate_transcript": "⚠️ Transcript '{filename}' already exists in collection '{collection_name}'\nPreviously processed at: {processed_at}\nNo need to ingest again. Use retrieval tools to access the existing transcript."
@@ -294,3 +295,38 @@ def get_output_format(format_type: str, **kwargs) -> str:
         Formatted output string
     """
     return OUTPUT_FORMATS.get(format_type, "").format(**kwargs)
+
+
+# RAG (Retrieval-Augmented Generation) prompt template
+RAG_PROMPT_TEMPLATE = """
+Based on the following transcript chunks, provide a precise and detailed answer to the user's question.
+
+**User Question:** {question}
+
+**Relevant Transcript Context:**
+{context}
+
+**Instructions:**
+1. Answer the question directly and precisely
+2. If the question is about pricing, costs, or rates, provide specific numbers and details
+3. Quote relevant parts from the transcripts to support your answer
+4. If information is incomplete, mention what's available and what's missing
+5. Be concise but comprehensive
+6. If no relevant information is found, clearly state that you can't answer, don't try to make things up
+
+**Answer:**
+"""
+
+
+def get_rag_prompt(question: str, context: str) -> str:
+    """
+    Get the RAG prompt for answer generation
+
+    Args:
+        question: User's question
+        context: Relevant transcript context
+
+    Returns:
+        Formatted RAG prompt
+    """
+    return RAG_PROMPT_TEMPLATE.format(question=question, context=context).strip()

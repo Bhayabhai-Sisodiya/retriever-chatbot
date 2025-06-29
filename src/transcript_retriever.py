@@ -11,7 +11,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import Filter, FieldCondition, MatchValue, OrderBy, Direction
+from qdrant_client.models import Filter, FieldCondition, MatchValue, OrderBy, Direction, Distance, VectorParams
 from templates import get_output_format, get_error_message
 
 # Load environment variables
@@ -41,6 +41,45 @@ class TranscriptRetriever:
         """
         self.qdrant_client = QdrantClient(host=qdrant_url, port=qdrant_port)
         self.collection_name = collection_name
+
+        # Check if collection exists and create if it doesn't
+        # self._ensure_collection_exists()
+
+    def _ensure_collection_exists(self):
+        """
+        Check if the collection exists and create it if it doesn't
+        """
+        try:
+            # Check if collection exists
+            collections = self.qdrant_client.get_collections()
+            collection_exists = any(
+                col.name == self.collection_name
+                for col in collections.collections
+            )
+
+            if not collection_exists:
+                print(f"📦 Collection '{self.collection_name}' does not exist. Creating...")
+                self._create_collection()
+                print(f"✅ Collection '{self.collection_name}' created successfully")
+            else:
+                print(f"✅ Collection '{self.collection_name}' already exists")
+
+        except Exception as e:
+            print(f"❌ Error checking/creating collection: {e}")
+            # Continue anyway - the error will be caught when trying to use the collection
+
+    def _create_collection(self):
+        """
+        Create the Qdrant collection with proper schema
+        """
+        # Create collection with BGE-M3 vector configuration
+        self.qdrant_client.create_collection(
+            collection_name=self.collection_name,
+            vectors_config=VectorParams(
+                size=1024,  # BGE-M3 embedding size
+                distance=Distance.COSINE
+            )
+        )
 
     def check_transcript_exists(self, filename: str) -> Dict[str, Any]:
         """
@@ -610,9 +649,9 @@ def search_transcripts_rag(
     qdrant_port: int = 6333,
     collection_name: str = "call_transcriptions",
     limit: int = 10
-) -> str:
+) -> dict:
     """
-    Perform RAG (Retrieval-Augmented Generation) search on transcripts
+    Perform RAG search on transcripts and return structured results
 
     Args:
         query: Question or search query
@@ -622,7 +661,7 @@ def search_transcripts_rag(
         limit: Number of top results to retrieve
 
     Returns:
-        Formatted string with search results and context
+        Dictionary with search results and formatted context
     """
     retriever = TranscriptRetriever(qdrant_url, qdrant_port, collection_name)
     result = retriever.search_transcripts(query, limit)
@@ -652,6 +691,7 @@ def search_transcripts_rag(
     full_context = "\n".join(context_chunks)
 
     return {
+        "error": False,
         "query": query,
         "total_results": total_results,
         "context": full_context,

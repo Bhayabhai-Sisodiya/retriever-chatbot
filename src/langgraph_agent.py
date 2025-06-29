@@ -23,7 +23,8 @@ from templates import (
     get_summarization_prompt,
     get_success_message,
     get_error_message,
-    get_output_format
+    get_output_format,
+    get_rag_prompt
 )
 
 # Load environment variables
@@ -283,25 +284,8 @@ def answer_question_from_transcripts(question: str) -> str:
         if total_results == 0:
             return f"❌ No relevant information found in transcripts for: '{question}'"
 
-        # Create RAG prompt for answer generation
-        rag_prompt = f"""
-Based on the following transcript chunks, provide a precise and detailed answer to the user's question.
-
-**User Question:** {question}
-
-**Relevant Transcript Context:**
-{context}
-
-**Instructions:**
-1. Answer the question directly and precisely
-2. If the question is about pricing, costs, or rates, provide specific numbers and details
-3. Quote relevant parts from the transcripts to support your answer
-4. If information is incomplete, mention what's available and what's missing
-5. Be concise but comprehensive
-6. If no relevant information is found, clearly state that you can't answer, don't try to make things up
-
-**Answer:**
-"""
+        # Create RAG prompt for answer generation using template
+        rag_prompt = get_rag_prompt(question, context)
 
         # Use the LLM to generate the answer
         llm = ChatOpenAI(

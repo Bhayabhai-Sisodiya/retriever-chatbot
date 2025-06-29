@@ -88,7 +88,9 @@ docker run -p 6333:6333 qdrant/qdrant
 ## Quick Start
 
 ```bash
-"I have attached langgraph_demo.ipynb file for quick start and example input outputs, you can take reference from there. also you can run the demo_cli.py file to see the demo of the project after completing the installation and inserting your transcripts."
+"I have attached langgraph_demo.ipynb file for quick start and example input outputs, you can take reference from there. also you can run the demo_cli.py file to see the demo of the project after completing the installation and inserting your transcripts.
+
+I have also added mcp_server.py file, and agent file mcp_langgraph_agent.py file for mcp server and client implementation. you can run the mcp_langgraph_agent.py file to see the demo of the project."
 ```
 
 
