@@ -15,7 +15,6 @@ A powerful AI-driven system for processing, storing, and querying call transcrip
 - 🎨 **Clean Output**: Minimal, professional responses
 - 📝 **Template System**: Centralized prompt management
 - 💬 **Natural Language Interface**: Chat-like interaction for all operations
-- MCP server implementation is remaining in this commit(will complete in next commit)
 
 ## 📋 Requirements
 
