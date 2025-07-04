@@ -61,18 +61,24 @@ class MCPLangGraphAgent:
             )
             self._llm_initialized = True
 
-    async def chat(self, message: str) -> str:
+    async def chat(self):
         """
-        Chat with the agent using MCP tools (creates fresh connection each time)
-
-        Args:
-            message: User message
-
-        Returns:
-            Agent response
+        Interactive chat interface with persistent MCP connection
         """
         # Initialize LLM if not done
         self._initialize_llm()
+
+        print("\n" + "="*60)
+        print("🤖 MCP LangGraph Agent - Interactive Chat")
+        print("="*60)
+        print("You can ask me to:")
+        print("  • Process transcription files: 'ingest the file at /path/to/file.txt'")
+        print("  • Get recent transcripts: 'show me the last call'")
+        print("  • Find specific transcripts: 'get transcript named demo_call.txt'")
+        print("  • List all transcripts: 'list all available calls'")
+        print("  • Answer questions: 'what was discussed about pricing?'")
+        print("  • Type 'quit' to exit")
+        print("="*60)
 
         try:
             # Create server parameters for stdio connection
@@ -82,7 +88,7 @@ class MCPLangGraphAgent:
                 env=None
             )
 
-            # Use fresh connection for each chat (more reliable)
+            # Use persistent connection for the entire chat session
             async with stdio_client(server_params) as (read, write):
                 async with ClientSession(read, write) as session:
                     # Initialize the connection
@@ -114,69 +120,50 @@ Guidelines:
 
 Be concise but informative in your responses.""")
 
-                    # Run the agent
-                    agent_response = await agent.ainvoke({
-                        "messages": [
-                            system_message,
-                            HumanMessage(content=message)
-                        ]
-                    })
+                    # Interactive chat loop
+                    while True:
+                        try:
+                            user_input = input("\n🗣️ You: ").strip()
 
-                    # Extract the final response
-                    if agent_response and "messages" in agent_response:
-                        last_message = agent_response["messages"][-1]
-                        return last_message.content
-                    else:
-                        return "❌ No response from agent"
+                            if user_input.lower() in ['quit', 'exit', 'q']:
+                                print("\n👋 Goodbye!")
+                                break
+
+                            if not user_input:
+                                continue
+
+                            print("🤖 Processing... ✨ ", end="", flush=True)
+
+                            # Run the agent with the user input
+                            agent_response = await agent.ainvoke({
+                                "messages": [
+                                    system_message,
+                                    HumanMessage(content=user_input)
+                                ]
+                            })
+
+                            # Extract and print the response
+                            if agent_response and "messages" in agent_response:
+                                last_message = agent_response["messages"][-1]
+                                print(last_message.content)
+                            else:
+                                print("❌ No response from agent")
+
+                        except KeyboardInterrupt:
+                            print("\n👋 Goodbye!")
+                            break
+                        except Exception as e:
+                            print(f"❌ Error processing message: {e}")
 
         except Exception as e:
-            print(f"❌ Error processing message: {e}")
+            print(f"❌ Error setting up MCP connection: {e}")
             import traceback
             traceback.print_exc()
-            return f"❌ Error processing message: {e}"
-
-async def interactive_chat():
-    """Interactive chat interface"""
-    agent = MCPLangGraphAgent()
-    
-    print("\n" + "="*60)
-    print("🤖 MCP LangGraph Agent - Interactive Chat")
-    print("="*60)
-    print("You can ask me to:")
-    print("  • Process transcription files: 'ingest the file at /path/to/file.txt'")
-    print("  • Get recent transcripts: 'show me the last call'")
-    print("  • Find specific transcripts: 'get transcript named demo_call.txt'")
-    print("  • List all transcripts: 'list all available calls'")
-    print("  • Answer questions: 'what was discussed about pricing?'")
-    print("  • Type 'quit' to exit")
-    print("="*60)
-    
-    try:
-        while True:
-            user_input = input("\n🗣️ You: ").strip()
-            
-            if user_input.lower() in ['quit', 'exit', 'q']:
-                break
-            
-            if not user_input:
-                continue
-            
-            print("🤖 Processing... ✨ ", end="", flush=True)
-            response = await agent.chat(user_input)
-            print(response)
-            
-    except KeyboardInterrupt:
-        print("\n👋 Goodbye!")
-    except Exception as e:
-        print(f"❌ Error: {e}")
-    
-    finally:
-        pass  # No cleanup needed - connections are closed automatically
-
 
 def main():
     """Main function"""
-    asyncio.run(interactive_chat())
+    agent = MCPLangGraphAgent()
+    asyncio.run(agent.chat())
 
 
 if __name__ == "__main__":

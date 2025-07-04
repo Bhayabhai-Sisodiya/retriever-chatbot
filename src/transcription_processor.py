@@ -9,7 +9,7 @@ This module provides functions to:
 5. Store embeddings in Qdrant
 """
 
-import os
+# import os
 import json
 import uuid
 from pathlib import Path
@@ -23,7 +23,7 @@ from FlagEmbedding import BGEM3FlagModel
 from qdrant_client import QdrantClient
 from qdrant_client.models import (
     Distance, VectorParams, PointStruct, 
-    CreateCollection, CollectionInfo
+    # CreateCollection, CollectionInfo
 )
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -92,13 +92,7 @@ class TranscriptionProcessor:
                     'filename': file_path.name,
                     'file_path': str(file_path)
                 }
-            
-            return {
-                'text': transcription_text,
-                'filename': file_path.name,
-                'file_path': str(file_path),
-                'format': 'csv'
-            }
+
         
         else:
             raise ValueError(f"Unsupported file format: {file_path.suffix}")

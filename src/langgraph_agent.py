@@ -17,7 +17,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
 
 from transcription_processor import process_single_transcription
-from transcript_retriever import get_last_call_summary, get_transcript_by_name, check_transcript_exists_by_filename, list_all_transcript_filenames, search_transcripts_rag
+from transcript_retriever import get_transcript_by_name, check_transcript_exists_by_filename, list_all_transcript_filenames, search_transcripts_rag
 from templates import (
     AGENT_SYSTEM_PROMPT,
     get_summarization_prompt,
